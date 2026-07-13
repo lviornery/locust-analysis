@@ -15,13 +15,13 @@ function avSE = getNegR2(offset)
     method = ["butter","movav","polyfit","tvdiff"];
     method = method(4);
     
-    butterOrder = 6;
+    butterOrder = 3;
     nyquistFrac = 0.2;
     
     mmn1 = 5;
     mmn2 = 9;
     
-    polyorder = 9;
+    polyorder = 6;
     
     a1 = 0.1;
     a2 = 0.1;

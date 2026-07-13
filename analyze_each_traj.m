@@ -1,22 +1,6 @@
 close all
 clear
 
-load("params_data.mat")
-load("palattes\customPalatte.mat")
-palatteskip = palatte(2:end,:);
-
-p = struct();
-p = params_static(p);
-p.dt = 1/2000;
-p.tfinal = 15e-4; % seconds
-
-doLineVideo = false;
-doWireframe = false;
-doOverlay = true;
-
-method = ["butter","movav","polyfit","tvdiff"];
-method = method(4);
-
 butterOrder = 3;
 nyquistFrac = 0.2;
 
@@ -28,12 +12,23 @@ polyorder = 6;
 a1 = 0.1;
 a2 = 0.1;
 
+load("params_data.mat")
+load("palattes\customPalatte.mat")
+palatteskip = palatte(2:end,:);
+
+p = struct();
+p = params_static(p);
+p.dt = 1/2000;
+p.tfinal = 15e-4; % seconds
+
 AllRMS_b = [];
 AllRMS_m = [];
 AllRMS_p = [];
 AllRMS_t = [];
 
 colorder = [2,1,5,3,4];
+
+violinorder = [1,3,4,5];
 
 for indivIdx = 1:7
     for idx = 1:length(fileIndices)
@@ -290,16 +285,47 @@ for indivIdx = 1:7
     end
 end
 
-figure
+
+
+%% tbhpropaganda, buillt II thinkre
+fig = figure('Position',[0,0,5*150,400]);
 titles = {"$RMS_{\theta_k}$ (deg)";"$RMS_{\theta_h}$ (deg)";"$RMS_{\theta_b}$ (deg)";"$RMS_{x}$ (m)";"$RMS_{y}$ (m)"};
 for j = 1:5
     AllRMS_var = [AllRMS_b(:,j),AllRMS_m(:,j),AllRMS_p(:,j),AllRMS_t(:,j)];
     if j == 1 || j == 2 || j == 3
         AllRMS_var = rad2deg(AllRMS_var);
     end
-    subplot(1,5,j)
-    boxchart(AllRMS_var)
+    AvgRMS_var = mean(AllRMS_var);
+    ax = subplot(1,5,j);
+    temp_line = plot(categorical(1:4),zeros(1,4));
+    delete(temp_line)
+    hold on
+    for k = 1:4
+        if j == 4|| j == 5
+            [f,xf] = kde(AllRMS_var(:,k),Kernel="normal",Bandwidth=0.00015,Support="nonnegative",NumPoints=1000);
+        else
+            [f,xf] = kde(AllRMS_var(:,k),Kernel="normal",Bandwidth=0.5,Support="nonnegative",NumPoints=1000);
+        end
+        vplot = violinplot(EvaluationPoints=xf,DensityValues=f,FaceColorMode="manual",FaceColor=palatte(violinorder(k),:));
+        vplot.XData = k;
+        vplot.SeriesIndex = k;
+        density_average = interp1(vplot.EvaluationPoints,...
+                             vplot.DensityValues,...
+                             AvgRMS_var(k));
+        width_average = vplot.DensityWidth.*density_average./max(vplot.DensityValues);
+        x_values = k + [-0.5 0.5]*width_average;
+        y_values = [AvgRMS_var(k) AvgRMS_var(k)];
+        plot(x_values, y_values, SeriesIndex=vplot.SeriesIndex,LineWidth=2,Color=palatte(violinorder(k),:));
+        if j == 4|| j == 5
+            ylim([0,0.01]);
+        else
+            ylim([0,45]);
+        end
+    end
+    hold off
     xticklabels({"Butterworth";"Moving Average";"Polynomial";"TV-Diff"})
-    title(titles(j),'Interpreter','latex',FontSize=12)
+    title(titles(j),'Interpreter','latex',FontSize=10)
     colororder(palatteskip)
+
+    saveas(fig,"Figures/Figure_5.png")
 end

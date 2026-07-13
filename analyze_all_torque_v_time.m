@@ -1,24 +1,32 @@
 close all
 clear
 
-load("params_data.mat")
-load("palattes\customPalatte.mat")
-
-method = ["butter","movav","polyfit","tvdiff"];
-method = method(4);
-
 butterOrder = 3;
 nyquistFrac = 0.2;
 
 mmn1 = 5;
 mmn2 = 9;
 
-polyorder = 9;
+polyorder = 6;
 
 a1 = 0.1;
 a2 = 0.1;
 
-fig = figure('Position', [10 10 900 1200])
+method = ["butter","movav","polyfit","tvdiff"];
+method = method(4);
+
+load("params_data.mat")
+load("palattes\customPalatte.mat")
+
+p = struct();
+p = params_static(p);
+p.dt = 1/2000;
+p.tfinal = 15e-4; % seconds
+
+cutoffAngle = p.MinKneeAngle;
+p.MinKneeAngle = 0; %need to override behavior to show superlinear region
+
+fig = figure('Position', [10 10 5*150 800])
 tlo = tiledlayout(7,2,"TileSpacing","tight")
 subplottcount = 1;
 subplotacount = 2;
@@ -36,24 +44,6 @@ for indivIdx = 1:7
                 continue
             end
         end
-        p = struct();
-        p = params_static(p);
-        cutoffAngle = p.MinKneeAngle;
-        p.dt = 1/2000;
-        p.tfinal = 15e-4; % seconds
-
-        p.MinKneeAngle = 0;
-        
-        a1q1 = 0.01;
-        a2q1 = 0.1;
-        a1q2 = 0.01;
-        a2q2 = 0.1;
-        a1x = 0.01;
-        a2x = 0.1;
-        a1y = 0.01;
-        a2y = 0.1;
-        a1theta = 0.01;
-        a2theta = 0.1;
     
         fileName = strcat("fulldata/a",num2str(fileIndices(idx,1)),"j",num2str(fileIndices(idx,2)),".csv");
         
@@ -167,29 +157,33 @@ for indivIdx = 1:7
         ylim([-5,10]*1e-5)
     else
         nexttile(subplottcount)
-        ylim([-5,13]*1e-4)
+        ylim([-10,13]*1e-4)
         xlim([0,0.045])
         nexttile(subplotacount)
-        ylim([-5,10]*1e-4)
+        ylim([-10,13]*1e-4)
     end
     nexttile(subplottcount)
     ylabel(strcat("Individual ",num2str(indivIdx)))
     nexttile(subplotacount)
     xlim([0,110])
-    xline(90,'--',LineWidth=1.5)
+    %xline(90,'--',LineWidth=1.5)
 
     subplottcount = subplottcount + 2;
     subplotacount = subplotacount + 2;
 end
-nexttile(2)
-leg = legend(["Knee Torque" ...
+nexttile(1)
+lineobj = findobj(gca,'Type','line');
+h1 = lineobj(end)
+h2 = lineobj(end-2)
+h3 = lineobj(end-4)
+leg = legend([h1, h2, h3],["Knee Torque" ...
     "Hip Torque" ...
-    "Body Torque"],FontSize=12,Orientation="horizontal")
+    "Body Torque"],FontSize=10,Orientation="horizontal")
 leg.IconColumnWidth = 10;
 leg.Layout.Tile = 'north';
 nexttile(13)
-xlabel("$t \, \mathrm{(s)}$",Interpreter="latex",FontSize=16)
+xlabel("$t \, \mathrm{(s)}$",Interpreter="latex",FontSize=10)
 nexttile(14)
-xlabel("$\theta_k \, \mathrm{(deg)}$",Interpreter="latex",FontSize=16)
-ylabel(tlo,'Torque (N-m)',FontSize=16);
-saveas(fig,"Figures/SpringTorqueTimeAngle.png")
+xlabel("$\theta_k \, \mathrm{(deg)}$",Interpreter="latex",FontSize=10)
+ylabel(tlo,'Torque (N-m)',FontSize=10);
+saveas(fig,"Figures/Figure_6.png")

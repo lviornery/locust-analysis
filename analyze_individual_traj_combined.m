@@ -1,34 +1,33 @@
 close all
 clear
 
-idx = 3;
-
-load("params_data.mat")
-load("palattes\customPalatte.mat")
-
-p = struct();
-p = params_static(p);
-p.ExtensorOffset = deg2rad(5);
-p.dt = 1/2000;
-p.tfinal = 15e-4; % seconds
-
-doLineVideo = false;
-doWireframe = false;
-doOverlay = true;
-
-method = ["butter","movav","polyfit","tvdiff"];
-method = method(4);
-
 butterOrder = 3;
 nyquistFrac = 0.2;
 
 mmn1 = 5;
 mmn2 = 9;
 
-polyorder = 9;
+polyorder = 6;
 
 a1 = 0.1;
 a2 = 0.1;
+
+idx = 3;
+
+method = ["butter","movav","polyfit","tvdiff"];
+method = method(4);
+
+load("params_data.mat")
+load("palattes\customPalatte.mat")
+
+p = struct();
+p = params_static(p);
+p.dt = 1/2000;
+p.tfinal = 15e-4; % seconds
+
+doLineVideo = false;
+doWireframe = false;
+doOverlay = true;
 
 fileName = strcat("fulldata/a",num2str(fileIndices(idx,1)),"j",num2str(fileIndices(idx,2)),".csv");
 videoName = strcat("fulldata/Locust ",num2str(fileIndices(idx,1))," jump ",num2str(fileIndices(idx,2)),".mp4");

@@ -1,6 +1,17 @@
 close all
 clear
 
+butterOrder = 3;
+nyquistFrac = 0.2;
+
+mmn1 = 5;
+mmn2 = 9;
+
+polyorder = 6;
+
+a1 = 0.1;
+a2 = 0.1;
+
 idx = 3;
 
 load("params_data.mat")
@@ -9,20 +20,8 @@ palatteskip = palatte(2:end,:);
 
 p = struct();
 p = params_static(p);
-p.ExtensorOffset = deg2rad(5);
 p.dt = 1/2000;
 p.tfinal = 15e-4; % seconds
-
-butterOrder = 6;
-nyquistFrac = 0.2;
-
-mmn1 = 5;
-mmn2 = 9;
-
-polyorder = 9;
-
-a1 = 0.1;
-a2 = 0.1;
 
 fileName = strcat("fulldata/a",num2str(fileIndices(idx,1)),"j",num2str(fileIndices(idx,2)),".csv");
 
@@ -145,7 +144,7 @@ for i = 1:length(t)
 end
 cons_viol_t = max(abs(cons_viol_t'));
 
-fig = figure(Position=[10,10,1200,900])
+fig = figure(Position=[10,10,5*150,600])
 tlo = tiledlayout(5,1,"TileSpacing","tight")
 tlk = tiledlayout(tlo,1,3,"TileSpacing","tight")
 tlk.Layout.Tile = 1;
@@ -160,108 +159,110 @@ tly.Layout.Tile = 5;
 
 nexttile(tlk)
 plot(t,rad2deg(pi - vq2),LineWidth=1.5)
-ylabel("$\theta_k \, (\textrm{deg})$",interpreter="latex",FontSize=14)
-title("Position",'interpreter','latex',FontSize=14)
+ylabel("$\theta_k \, (\textrm{deg})$",interpreter="latex",FontSize=10)
+title("Position",'interpreter','latex',FontSize=10)
 colororder(palatte)
 nexttile(tlk)
 plot([NaN],[NaN],t,rad2deg(-vdq2_m),t,rad2deg(-vdq2_p),t,rad2deg(-vdq2_b),t,rad2deg(-vdq2_t),LineWidth=1.5)
-ylabel("$\dot{\theta}_k \, (\textrm{deg/s})$",interpreter="latex",FontSize=14)
-title("Velocity",'interpreter','latex',FontSize=14)
+ylabel("$\dot{\theta}_k \, (\textrm{deg/s})$",interpreter="latex",FontSize=10)
+title("Velocity",'interpreter','latex',FontSize=10)
 colororder(palatte)
 nexttile(tlk)
 plot([NaN],[NaN],t,rad2deg(-vddq2_m),t,rad2deg(-vddq2_p),t,rad2deg(-vddq2_b),t,rad2deg(-vddq2_t),LineWidth=1.5)
-ylabel("$\ddot{\theta}_k \, (\textrm{deg/s}^2)$",interpreter="latex",FontSize=14)
-title("Acceleration",'interpreter','latex',FontSize=14)
+ylabel("$\ddot{\theta}_k \, (\textrm{deg/s}^2)$",interpreter="latex",FontSize=10)
+title("Acceleration",'interpreter','latex',FontSize=10)
 ylim([-0.5,5.5]*1e5)
 colororder(palatte)
 
 nexttile(tlh)
 plot(t,rad2deg(vq1),LineWidth=1.5)
-ylabel("$\theta_h \, (\textrm{deg})$",interpreter="latex",FontSize=14)
+ylabel("$\theta_h \, (\textrm{deg})$",interpreter="latex",FontSize=10)
 colororder(palatte)
 nexttile(tlh)
 plot([NaN],[NaN],t,rad2deg(vdq1_m),t,rad2deg(vdq1_p),t,rad2deg(vdq1_b),t,rad2deg(vdq1_t),LineWidth=1.5)
-ylabel("$\dot{\theta}_h \, (\textrm{deg/s})$",interpreter="latex",FontSize=14)
+ylabel("$\dot{\theta}_h \, (\textrm{deg/s})$",interpreter="latex",FontSize=10)
 colororder(palatte)
 nexttile(tlh)
 plot([NaN],[NaN],t,rad2deg(vddq1_m),t,rad2deg(vddq1_p),t,rad2deg(vddq1_b),t,rad2deg(vddq1_t),LineWidth=1.5)
-ylabel("$\ddot{\theta}_h \, (\textrm{deg/s}^2)$",interpreter="latex",FontSize=14)
+ylabel("$\ddot{\theta}_h \, (\textrm{deg/s}^2)$",interpreter="latex",FontSize=10)
 ylim([-1,4]*1e5)
 colororder(palatte)
 
 nexttile(tlb)
 plot(t,rad2deg(vtheta),LineWidth=1.5)
-ylabel("$\theta_b \, (\textrm{deg})$",interpreter="latex",FontSize=14)
+ylabel("$\theta_b \, (\textrm{deg})$",interpreter="latex",FontSize=10)
 colororder(palatte)
 nexttile(tlb)
 plot([NaN],[NaN],t,rad2deg(vdtheta_m),t,rad2deg(vdtheta_p),t,rad2deg(vdtheta_b),t,rad2deg(vdtheta_t),LineWidth=1.5)
-ylabel("$\dot{\theta}_b \, (\textrm{deg/s})$",interpreter="latex",FontSize=14)
+ylabel("$\dot{\theta}_b \, (\textrm{deg/s})$",interpreter="latex",FontSize=10)
 colororder(palatte)
 nexttile(tlb)
 plot([NaN],[NaN],t,rad2deg(vddtheta_m),t,rad2deg(vddtheta_p),t,rad2deg(vddtheta_b),t,rad2deg(vddtheta_t),LineWidth=1.5)
-ylabel("$\ddot{\theta}_b \, (\textrm{deg/s}^2)$",interpreter="latex",FontSize=14)
+ylabel("$\ddot{\theta}_b \, (\textrm{deg/s}^2)$",interpreter="latex",FontSize=10)
 ylim([-1.5,1.5]*1e5)
 colororder(palatte)
 
 nexttile(tlx)
 plot(t,x,LineWidth=1.5)
-ylabel("$x \, (\textrm{m})$",interpreter="latex",FontSize=14)
+ylabel("$x \, (\textrm{m})$",interpreter="latex",FontSize=10)
 nexttile(tlx)
 plot([NaN],[NaN],t,dx_m,t,dx_p,t,dx_b,t,dx_t,LineWidth=1.5)
-ylabel("$\dot{x} \, (\textrm{m/s})$",interpreter="latex",FontSize=14)
+ylabel("$\dot{x} \, (\textrm{m/s})$",interpreter="latex",FontSize=10)
 nexttile(tlx)
 plot([NaN],[NaN],t,ddx_m,t,ddx_p,t,ddx_b,t,ddx_t,LineWidth=1.5)
-ylabel("$\ddot{x} \, (\textrm{m/s}^2)$",interpreter="latex",FontSize=14)
+ylabel("$\ddot{x} \, (\textrm{m/s}^2)$",interpreter="latex",FontSize=10)
 colororder(palatte)
 
 nexttile(tly)
 plot(t,y,LineWidth=1.5)
-ylabel("$y \, (\textrm{m})$",interpreter="latex",FontSize=14)
+ylabel("$y \, (\textrm{m})$",interpreter="latex",FontSize=10)
 nexttile(tly)
 plot([NaN],[NaN],t,dy_m,t,dy_p,t,dy_b,t,dy_t,LineWidth=1.5)
-ylabel("$\dot{y} \, (\textrm{m/s})$",interpreter="latex",FontSize=14)
+ylabel("$\dot{y} \, (\textrm{m/s})$",interpreter="latex",FontSize=10)
 % ylim(1.25*[min(dy-eq_dy),max(dy+eq_dy)])
 nexttile(tly)
 plot([NaN],[NaN],t,ddy_m,t,ddy_p,t,ddy_b,t,ddy_t,LineWidth=1.5)
-ylabel("$\ddot{y} \, (\textrm{m/s}^2)$",interpreter="latex",FontSize=14)
+ylabel("$\ddot{y} \, (\textrm{m/s}^2)$",interpreter="latex",FontSize=10)
 colororder(palatte)
 
-xlabel(tlo,'Time (s)',FontSize=16);
+xlabel(tlo,'Time (s)',FontSize=10);
 ax = nexttile(tlk,2)
 leg = legend(...
     [ax.Children(5),ax.Children(4),ax.Children(3),ax.Children(2),ax.Children(1)],...
     ["Measured";"Moving-Average Filtered";"Polynomial Fit";"Butterworth Filtered";"TV Differentiated"],...
-    FontSize=12,Orientation="horizontal")
+    FontSize=10,Orientation="horizontal")
 leg.IconColumnWidth = 10;
 leg.Layout.Tile = 'north';
+annotation("textbox",String="A",FontSize=16,LineStyle="none",Position=[0.025,0.9,0.1,0.1],FontName='Palatino Linotype')
 
-saveas(fig,"Figures/MethodExampleNoShadow.png")
+saveas(fig,"Figures/Figure_3_A.png")
 
-fig = figure(Position=[10,10,1200,300])
+fig = figure(Position=[10,10,5*150,200])
 tlo = tiledlayout(1,3,"TileSpacing","tight")
 nexttile
 plot([NaN],[NaN],t,-torque_m_k_m,t,-torque_m_k_p,t,-torque_m_k_b,t,-torque_m_k_t,LineWidth=1.5)
-title("$\tau_k$",'interpreter','latex',FontSize=16)
+title("$\tau_k$",'interpreter','latex',FontSize=10)
 ylim([-1,7]*1e-4)
 % ylim(1.25*[min(torque_m_k-eq_torque_k),max(torque_m_k+eq_torque_k)])
 nexttile
 plot([NaN],[NaN],t,torque_m_h_m,t,torque_m_h_p,t,torque_m_h_b,t,torque_m_h_t,LineWidth=1.5)
-title("$\tau_h$",'interpreter','latex',FontSize=16)
+title("$\tau_h$",'interpreter','latex',FontSize=10)
 ylim([-1.5,1.5]*1e-4)
 % ylim(1.25*[min(torque_m_h-eq_torque_h),max(torque_m_h+eq_torque_h)])
 ax = nexttile;
 plot([NaN],[NaN],t,torque_m_b_m,t,torque_m_b_p,t,torque_m_b_b,t,torque_m_b_t,LineWidth=1.5)
-title("$\tau_b$",'interpreter','latex',FontSize=16)
+title("$\tau_b$",'interpreter','latex',FontSize=10)
 ylim([-1.5,2.5]*1e-4)
 % ylim(1.25*[min(torque_m_b-eq_torque_b),max(torque_m_b+eq_torque_b)])
 colororder(palatte)
-ylabel(tlo,'Torque (N-m)',FontSize=16);
-xlabel(tlo,'Time (s)',FontSize=16);
+ylabel(tlo,'Torque (N-m)',FontSize=10);
+xlabel(tlo,'Time (s)',FontSize=10);
 leg = legend(...
     [ax.Children(4),ax.Children(3),ax.Children(2),ax.Children(1)],...
     ["Moving-Average Filtered";"Polynomial Fit";"Butterworth Filtered";"TV Differentiated"],...
-    FontSize=12,Orientation="horizontal")
+    FontSize=10,Orientation="horizontal")
 leg.IconColumnWidth = 10;
 leg.Layout.Tile = 'north';
+annotation("textbox",String="B",FontSize=16,LineStyle="none",Position=[0.025,0.9,0.1,0.1],FontName='Palatino Linotype')
 
-saveas(fig,"Figures/MethodExampleTorqueNoShadow.png")
+saveas(fig,"Figures/Figure_3_B.png")

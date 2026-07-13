@@ -1,19 +1,19 @@
 close all
 clear
 
-method = ["butter","movav","polyfit","tvdiff"];
-method = method(4);
-
-butterOrder = 6;
+butterOrder = 3;
 nyquistFrac = 0.2;
 
 mmn1 = 5;
 mmn2 = 9;
 
-polyorder = 9;
+polyorder = 6;
 
 a1 = 0.1;
 a2 = 0.1;
+
+method = ["butter","movav","polyfit","tvdiff"];
+method = method(4);
 
 load("params_data.mat")
 load("palattes\customPalatte.mat")
@@ -23,13 +23,15 @@ p = params_static(p);
 p.dt = 1/2000;
 p.tfinal = 15e-4; % seconds
 
-fig = figure('Position', [10 10 900 1200])
+fig = figure('Position', [10 10 5*150 800])
 tlo = tiledlayout(1,2,"TileSpacing","compact")
 tlr = tiledlayout(tlo,7,1,"TileSpacing","tight")
 tlr.Layout.Tile = 1;
 tll = tiledlayout(tlo,7,1,"TileSpacing","tight")
 tll.Layout.Tile = 2;
 subplotcount = 1;
+
+post_rsqrs = [];
 
 for indivIdx = 1:7
     nexttile(tlr,subplotcount)
@@ -44,6 +46,9 @@ for indivIdx = 1:7
     offset_index = [];
     ext_m_k_full = [];
     force_m_k_full = [];
+    extra_offset_index = [];
+    extra_ext_m_k_full = [];
+    extra_force_m_k_full = [];
     phiRange = [inf,0];
     for idx = 1:length(fileIndices)
         if indivIdx
@@ -146,6 +151,12 @@ for indivIdx = 1:7
         new_offset_index(:,offset_number) = ones(size(ext_m_k(maxextindex:end)));
         offset_index = [offset_index;new_offset_index];
 
+        extra_ext_m_k_full = [extra_ext_m_k_full;ext_m_k(1:maxextindex)];
+        extra_force_m_k_full = [extra_force_m_k_full;force_m_k(1:maxextindex)];
+        extra_new_offset_index = zeros(length(ext_m_k(1:maxextindex)),noffsets);
+        extra_new_offset_index(:,offset_number) = ones(size(ext_m_k(1:maxextindex)));
+        extra_offset_index = [extra_offset_index;extra_new_offset_index];
+
         if min(phi(maxextindex:end)) < phiRange(1)
             phiRange(1) = min(phi(maxextindex:end));
         end
@@ -169,18 +180,33 @@ for indivIdx = 1:7
     yfmat = zeros(length(Y),noffsets);
     esqr = 0;
     xosqr = 0;
+    yosqr = 0;
+    esqr_post_offset = 0;
+    yosqr_post_offset = 0;
     ax = nexttile(tlr,subplotcount)
     set(ax,'ColorOrderIndex',1)
     for i = 1:noffsets
         yfmat(:,i) = coefs(i)+coefs(slope_index)*X;
         plot(X,yfmat(:,i),LineWidth=1.5)
+        %sum of squared errors of each data point's y-data
         esqr = esqr +...
             sum((coefs(i)+coefs(slope_index)*ext_m_k_full(offset_index(:,i)==1) - force_m_k_full(offset_index(:,i)==1)).^2);
+        %sum of squared differences of each series' x-data from its own mean
         xosqr = xosqr +...
             sum((ext_m_k_full(offset_index(:,i)==1) - mean(ext_m_k_full(offset_index(:,i)==1))).^2);
+        %sum of squared differences of each series' y-data from its own mean
+        yosqr = yosqr +...
+            sum((force_m_k_full(offset_index(:,i)==1) - mean(force_m_k_full(offset_index(:,i)==1))).^2);
+        esqr_post_offset = esqr_post_offset +...
+            sum((coefs(i)+coefs(slope_index)*extra_ext_m_k_full(extra_offset_index(:,i)==1) - extra_force_m_k_full(extra_offset_index(:,i)==1)).^2);
+        yosqr_post_offset = yosqr_post_offset +...
+            sum((extra_force_m_k_full(extra_offset_index(:,i)==1) - mean(extra_force_m_k_full(extra_offset_index(:,i)==1))).^2);
     end
     slope = coefs(slope_index)
     SEslope = sqrt((esqr/xosqr)*dof_deflator)
+    rsqr = 1 - esqr/yosqr
+    rsqr_post_offset = 1 - esqr_post_offset/yosqr_post_offset
+    post_rsqrs = [post_rsqrs;rsqr_post_offset]
 
     ax = nexttile(tll,subplotcount)
     set(ax,'ColorOrderIndex',1)
@@ -194,13 +220,13 @@ for indivIdx = 1:7
     end
     if indivIdx == 7
         nexttile(tlr,subplotcount)
-        text(0.6250*0.5e-4,0.4,{strcat("k \approx ",num2str(slope/1e3,3),"\pm",num2str(SEslope/1e3,2)," kN/m")})
+        text(0.6250*0.5e-4,0.4,{strcat("k \approx ",num2str(slope/1e3,3),"\pm",num2str(SEslope/1e3,2)," kN/m"),strcat("R^2 = ",num2str(rsqr,3))})
         ylim([0,0.5])
         nexttile(tll,subplotcount)
         ylim([0,1.5e-4])
     else
         nexttile(tlr,subplotcount)
-        text(0.5e-4,2.5,{strcat("k \approx ",num2str(slope/1e3,3),"\pm",num2str(SEslope/1e3,1)," kN/m")})
+        text(0.5e-4,2.5,{strcat("k \approx ",num2str(slope/1e3,3),"\pm",num2str(SEslope/1e3,1)," kN/m"),strcat("R^2 = ",num2str(rsqr,3))})
         ylim([0,3])
         nexttile(tll,subplotcount)
         ylim([0,1.25e-3])
@@ -218,13 +244,13 @@ hold(ax, 'on')
 scatter(ax,NaN,NaN,'x')
 set(ax,'ColorOrderIndex',1)
 plot(ax,NaN,NaN)
-leg = legend(["Estimated Force/Torque";"Regression"],FontSize=12,Orientation="horizontal")
+leg = legend(["Estimated Force/Torque";"Regression"],FontSize=10,Orientation="horizontal")
 leg.IconColumnWidth = 10;
 leg.Layout.Tile = 'north';
 nexttile(tlr,7)
-xlabel("$\Delta \mathrm{ext \, (m)}$",Interpreter="latex",FontSize=16)
+xlabel("$\Delta x\mathrm{ \, (m)}$",Interpreter="latex",FontSize=10)
 nexttile(tll,7)
-xlabel("$\theta_k \, \mathrm{(deg)}$",Interpreter="latex",FontSize=16)
-ylabel(tlr,'Force (N)',FontSize=16);
-ylabel(tll,'Torque (N-m)',FontSize=16);
-saveas(fig,"Figures/SpringAnalysis.png")
+xlabel("$\theta_k \, \mathrm{(deg)}$",Interpreter="latex",FontSize=10)
+ylabel(tlr,'Force (N)',FontSize=10);
+ylabel(tll,'Torque (N-m)',FontSize=1);
+saveas(fig,"Figures/Figure_7.png")

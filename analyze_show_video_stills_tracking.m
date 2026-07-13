@@ -1,20 +1,6 @@
 close all
 clear
 
-idx = 3;
-
-load("params_data.mat")
-load("palattes\customPalatte.mat")
-
-p = struct();
-p = params_static(p);
-p.dt = 1/2000;
-p.tfinal = 15e-4; % seconds
-
-showFrame = true;
-
-method = ["butter","movav","polyfit","tvdiff"];
-method = method(4);
 butterOrder = 3;
 nyquistFrac = 0.2;
 
@@ -23,12 +9,34 @@ mmn2 = 9;
 
 polyorder = 6;
 
-a1 = 0.01;
+a1 = 0.1;
 a2 = 0.1;
+
+showFrame = true;
+
+idx = 3;
 
 cropOffset = 200
 xoffset = -150
 yoffset = 120
+
+method = ["butter","movav","polyfit","tvdiff"];
+method = method(4);
+
+load("params_data.mat")
+load("palattes\customPalatte.mat")
+
+headcolor = '#C67DAA';
+bodycolor = '#EEE642';
+hipcolor = '#189F76';
+kneecolor = '#53B5E5';
+footcolor = '#D26222';
+buttcolor = '#E89F22';
+
+p = struct();
+p = params_static(p);
+p.dt = 1/2000;
+p.tfinal = 15e-4; % seconds
 
 fileName = strcat("fulldata/a",num2str(fileIndices(idx,1)),"j",num2str(fileIndices(idx,2)),".csv");
 videoName = strcat("fulldata/Locust ",num2str(fileIndices(idx,1))," jump ",num2str(fileIndices(idx,2)),".mp4");
@@ -160,54 +168,54 @@ ellipsecoordinatesMod = plot_bodyellipse(zmatMod(1,:),p);
 frameIndices = round(size(t,1)*linspace(0.1,0.9,5));
 timeIndices = frameIndices*p.dt;
     
-fig = figure('Position', [10 10 900 1200])
+fig = figure('Position', [10 10 5*150 800])
 tlo = tiledlayout(7,5,"TileSpacing","tight")
 nexttile([1,5])
 colororder(palatte)
 hold on
 plot(t,180-rad2deg(zmatObs(:,2)),t,180-rad2deg(zmatMod(:,2)),LineWidth=1.5)
-xline(timeIndices,'--',LineWidth=1.5)
+%xline(timeIndices,'--',LineWidth=1.5)
 hold off
-ylabel("$\theta_k \, \mathrm{(deg)}$",'interpreter','latex',FontSize=14,Rotation=0)
+ylabel("$\theta_k \, \mathrm{(deg)}$",'interpreter','latex',FontSize=10,Rotation=0)
 xlim([0,t(end)])
 ylim([0,100])
-leg = legend(["Measured";"Feedforward"],Location="southwest",FontSize=12,Orientation="horizontal")
+leg = legend(["Measured";"Feedforward"],Location="southwest",FontSize=10,Orientation="horizontal")
 leg.IconColumnWidth = 10;
 leg.Layout.Tile = "north"
 nexttile([1,5])
 colororder(palatte)
 hold on
 plot(t,rad2deg(zmatObs(:,1)),t,rad2deg(zmatMod(:,1)),LineWidth=1.5)
-xline(timeIndices,'--',LineWidth=1.5)
+%xline(timeIndices,'--',LineWidth=1.5)
 hold off
-ylabel("$\theta_h \, \mathrm{(deg)}$",'interpreter','latex',FontSize=14,Rotation=0)
+ylabel("$\theta_h \, \mathrm{(deg)}$",'interpreter','latex',FontSize=10,Rotation=0)
 xlim([0,t(end)])
 ylim([100,180])
 nexttile([1,5])
 colororder(palatte)
 hold on
 plot(t,rad2deg(zmatObs(:,5)),t,rad2deg(zmatMod(:,5)),LineWidth=1.5)
-xline(timeIndices,'--',LineWidth=1.5)
+%xline(timeIndices,'--',LineWidth=1.5)
 hold off
-ylabel("$\theta_b \, \mathrm{(deg)}$",'interpreter','latex',FontSize=14,Rotation=0)
+ylabel("$\theta_b \, \mathrm{(deg)}$",'interpreter','latex',FontSize=10,Rotation=0)
 xlim([0,t(end)])
 ylim([-25,55])
 nexttile([1,5])
 colororder(palatte)
 hold on
 plot(t,zmatObs(:,3),t,zmatMod(:,3),LineWidth=1.5)
-xline(timeIndices,'--',LineWidth=1.5)
+%xline(timeIndices,'--',LineWidth=1.5)
 hold off
-ylabel("$x \, \mathrm{(m)}$",'interpreter','latex',FontSize=14,Rotation=0)
+ylabel("$x \, \mathrm{(m)}$",'interpreter','latex',FontSize=10,Rotation=0)
 xlim([0,t(end)])
 ylim([-1e-2,3e-2])
 nexttile([1,5])
 colororder(palatte)
 hold on
 plot(t,zmatObs(:,4),t,zmatMod(:,4),LineWidth=1.5)
-xline(timeIndices,'--',LineWidth=1.5)
+%xline(timeIndices,'--',LineWidth=1.5)
 hold off
-ylabel("$y \, \mathrm{(m)}$",'interpreter','latex',FontSize=14,Rotation=0)
+ylabel("$y \, \mathrm{(m)}$",'interpreter','latex',FontSize=10,Rotation=0)
 xlim([0,t(end)])
 ylim([-1e-2,3e-2])
 ax = nexttile([1,5])
@@ -215,9 +223,9 @@ colororder(palatte)
 set(ax,'ColorOrderIndex',2)
 hold on
 plot(t,fout,LineWidth=1.5)
-xline(timeIndices,'--',LineWidth=1.5)
+%xline(timeIndices,'--',LineWidth=1.5)
 hold off
-ylabel("$\mathrm{GRF \, (N)}$",'interpreter','latex',FontSize=14,Rotation=0)
+ylabel("$\mathrm{GRF \, (N)}$",'interpreter','latex',FontSize=10,Rotation=0)
 xlim([0,t(end)])
 
 rad2deg(sqrt(mean((zmatObs(:,2)-zmatMod(:,2)).^2)))
@@ -251,14 +259,22 @@ while hasFrame(videoObject)
         set(ax,'YDir','normal')
         if showFrame
             hold on
+            %lines
             plot([rpositions(1,4,frameCounter),rpositions(1,3,frameCounter)],[rpositions(2,4,frameCounter),rpositions(2,3,frameCounter)],LineWidth=3,Color=palatte(2,:));
             plot([rpositions(1,3,frameCounter),rpositions(1,2,frameCounter)],[rpositions(2,3,frameCounter),rpositions(2,2,frameCounter)],LineWidth=3,Color=palatte(2,:));
             plot([rpositions(1,2,frameCounter),rpositions(1,1,frameCounter)],[rpositions(2,2,frameCounter),rpositions(2,1,frameCounter)],LineWidth=3,Color=palatte(2,:));
             plot(rellipsecoordinates(1,:),rellipsecoordinates(2,:),LineWidth=1.5,Color=palatte(2,:))
+            %points
+            plot(rpositions(1,4,frameCounter),rpositions(2,4,frameCounter),'.',MarkerSize=10,Color=footcolor)
+            plot(rpositions(1,3,frameCounter),rpositions(2,3,frameCounter),'.',MarkerSize=10,Color=kneecolor)
+            plot(rpositions(1,2,frameCounter),rpositions(2,2,frameCounter),'.',MarkerSize=10,Color=hipcolor)
+            plot(rpositions(1,1,frameCounter),rpositions(2,1,frameCounter),'.',MarkerSize=10,Color=bodycolor)
+            plot(rellipsecoordinates(1,1),rellipsecoordinates(2,1),'.',MarkerSize=10,Color=headcolor)
+            plot(rellipsecoordinates(1,round(length(rellipsecoordinates)/2)),rellipsecoordinates(2,round(length(rellipsecoordinates)/2)),'.',MarkerSize=10,Color=buttcolor)
             hold off
         end
         pbaspect(ax,[1 1 1])
         ax.Visible = "off";
     end
 end
-saveas(fig,"Figures/VideoStillsWireframe.png")
+saveas(fig,"Figures/Figure_4.png")
